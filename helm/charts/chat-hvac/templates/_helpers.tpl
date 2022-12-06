@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "exporter-weather.name" -}}
+{{- define "chat-hvac.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "exporter-weather.fullname" -}}
+{{- define "chat-hvac.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "exporter-weather.chart" -}}
+{{- define "chat-hvac.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "exporter-weather.labels" -}}
-helm.sh/chart: {{ include "exporter-weather.chart" . }}
-{{ include "exporter-weather.selectorLabels" . }}
+{{- define "chat-hvac.labels" -}}
+helm.sh/chart: {{ include "chat-hvac.chart" . }}
+{{ include "chat-hvac.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,17 +45,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "exporter-weather.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "exporter-weather.name" . }}
+{{- define "chat-hvac.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "chat-hvac.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "exporter-weather.serviceAccountName" -}}
+{{- define "chat-hvac.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "exporter-weather.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "chat-hvac.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
