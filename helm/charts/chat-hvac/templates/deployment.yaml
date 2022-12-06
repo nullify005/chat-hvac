@@ -54,19 +54,8 @@ spec:
           {{- end }}
           args:
           - watch
-          - {{ .Values.intesis.device | quote }}
-          - --listen
-          - :{{ .Values.livenessProbe.port }}
-          - --interval
-          - {{ .Values.intesis.pollInterval | quote }}
-          - --secrets
-          - "/.secrets/creds.yaml"
-          {{- if .Values.intesis.mockserver.enabled }}
-          - --tcpserver
-          - "{{ .Values.intesis.mockserver.name | default "mockserver" }}:{{ .Values.intesis.mockserver.tcpserver }}"
-          - --httpserver
-          - "http://{{ .Values.intesis.mockserver.name | default "mockserver" }}:{{ .Values.intesis.mockserver.httpserver }}"
-          {{- end }}
+          - --config
+          - "/.secrets/config.yaml"
           {{- if .Values.secrets }}
           {{- if .Values.env }}
           env:
@@ -78,12 +67,6 @@ spec:
           volumeMounts:
           - name: secrets
             mountPath: /.secrets
-          {{- end }}
-          {{- if .Values.service.enabled }}
-          ports:
-            - name: http
-              containerPort: {{ .Values.service.port }}
-              protocol: TCP
           {{- end }}
           livenessProbe:
             httpGet:
