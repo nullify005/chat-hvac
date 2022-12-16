@@ -17,44 +17,57 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package cmd
 
 import (
+	"fmt"
+	"log"
 	"os"
 
+	"github.com/nullify005/chat-hvac/pkg/adapter"
+	"github.com/nullify005/chat-hvac/pkg/adapter/console"
+	"github.com/nullify005/chat-hvac/pkg/adapter/slack"
+	"github.com/nullify005/chat-hvac/pkg/config"
+	"github.com/nullify005/chat-hvac/pkg/health"
+	"github.com/nullify005/chat-hvac/pkg/hvac"
+	"github.com/nullify005/chat-hvac/pkg/receiver"
 	"github.com/spf13/cobra"
 )
 
 var (
-	flagsSlackBotToken string
-	flagsSlackAppToken string
-	flagsSlackChannel  string
-	flagsConfig        string
-	flagsIntesis       string
-	flagsDevice        string
-	rootCmd            = &cobra.Command{
+	flagsConfig  string
+	flagsAdapter string
+	rootCmd      = &cobra.Command{
 		Use:   "chat-hvac",
 		Short: "A slack & service-intesis integration to control HVAC status",
+		Run: func(cmd *cobra.Command, args []string) {
+			var adapter adapter.Adapter
+			logger := log.New(os.Stdout, "" /* prefix */, log.Ldate|log.Ltime|log.Lshortfile)
+			logger.Print("logger is alive")
+			c, err := config.New(flagsConfig)
+			if err != nil {
+				logger.Fatalf("unable to read config: %s cause: %v", flagsConfig, err)
+			}
+			if flagsAdapter == "slack" {
+				adapter = slack.New(c.BotToken, c.AppToken, slack.WithLogger(logger))
+			} else {
+				adapter = console.New(console.WithLogger(logger))
+			}
+			h := hvac.New(hvac.WithApi(c.Intesis), hvac.WithDevice(c.Device), hvac.WithLogger(logger))
+			r := receiver.New(adapter, receiver.WithLogger(logger), receiver.WithHvac(h))
+			health := health.New(health.WithLogger(logger))
+			health.Run()
+			r.Receive()
+		},
 	}
 )
 
 func Execute() {
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
-	err := rootCmd.Execute()
-	if err != nil {
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&flagsSlackBotToken, "bottoken", "", "Slack BotToken xoxb-...")
-	rootCmd.PersistentFlags().StringVar(&flagsSlackAppToken, "apptoken", "", "Slack AppToken xapp-...")
-	rootCmd.PersistentFlags().StringVar(&flagsSlackChannel, "channel", "", "Slack Channel")
-	rootCmd.PersistentFlags().StringVar(&flagsConfig, "config", "", "Path to Config file")
-	rootCmd.PersistentFlags().StringVar(&flagsIntesis, "intesis", "", "URL for service-intesis endpoint")
-	rootCmd.PersistentFlags().StringVar(&flagsDevice, "device", "", "Intesis device to conduct actions on")
-	// if flagsConfig == "" {
-	// 	rootCmd.MarkFlagRequired("bottoken")
-	// 	rootCmd.MarkFlagRequired("apptoken")
-	// 	rootCmd.MarkFlagRequired("channel")
-	// } else {
-	// 	rootCmd.MarkFlagRequired("config")
-	// }
+	rootCmd.PersistentFlags().StringVar(&flagsConfig, "config", "/.secrets/config.yaml", "Path to Config file")
+	rootCmd.Flags().StringVarP(&flagsAdapter, "adapter", "a", "console", "The name of the IM adapter (slack|console) defaults to console")
 }

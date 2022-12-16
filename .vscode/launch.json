@@ -10,7 +10,8 @@
             "request": "launch",
             "mode": "auto",
             "cwd": "${workspaceRoot}/src",
-            "program": "${workspaceRoot}/src/main.go"
+            "program": "${workspaceRoot}/src/main.go",
+            "args":[]
         }
     ]
 }
