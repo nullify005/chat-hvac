@@ -21,7 +21,7 @@ serviceAccount:
 podAnnotations:
   prometheus.io/scrape: "false"
   prometheus.io/path: /metrics
-  prometheus.io/port: "2113"
+  prometheus.io/port: "8080"
 
 podSecurityContext: {}
   # fsGroup: 2000
@@ -46,10 +46,10 @@ resources:
 
 livenessProbe:
   path: /health
-  port: 2113
+  port: 8080
 readinessProbe:
   path: /health
-  port: 2113
+  port: 8080
 
 autoscaling:
   enabled: false
@@ -66,6 +66,8 @@ affinity: {}
 
 command:
 - /chat-hvac
+- --adapter
+- slack
 
 secrets:
 - config.yaml
